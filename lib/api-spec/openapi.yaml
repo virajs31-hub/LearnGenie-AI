@@ -1,0 +1,892 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: LearnGenie AI API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: study-plans
+    description: AI study plan operations
+  - name: quizzes
+    description: Quiz operations
+  - name: flashcards
+    description: Flashcard operations
+  - name: progress
+    description: Learning progress tracking
+  - name: chat
+    description: AI chat operations
+  - name: notes
+    description: Study notes
+  - name: dashboard
+    description: Dashboard summary data
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /study-plans:
+    get:
+      operationId: listStudyPlans
+      tags: [study-plans]
+      summary: List all study plans
+      responses:
+        "200":
+          description: List of study plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudyPlan"
+    post:
+      operationId: createStudyPlan
+      tags: [study-plans]
+      summary: Create a new AI study plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyPlanInput"
+      responses:
+        "201":
+          description: Created study plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyPlan"
+
+  /study-plans/{id}:
+    get:
+      operationId: getStudyPlan
+      tags: [study-plans]
+      summary: Get a study plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Study plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyPlan"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteStudyPlan
+      tags: [study-plans]
+      summary: Delete a study plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /quizzes:
+    get:
+      operationId: listQuizzes
+      tags: [quizzes]
+      summary: List all quizzes
+      responses:
+        "200":
+          description: List of quizzes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Quiz"
+    post:
+      operationId: createQuiz
+      tags: [quizzes]
+      summary: Generate a new quiz with AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizInput"
+      responses:
+        "201":
+          description: Created quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+
+  /quizzes/{id}:
+    get:
+      operationId: getQuiz
+      tags: [quizzes]
+      summary: Get a quiz with questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quiz with questions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+        "404":
+          description: Not found
+
+  /quizzes/{id}/submit:
+    post:
+      operationId: submitQuizResult
+      tags: [quizzes]
+      summary: Submit quiz results
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizResultInput"
+      responses:
+        "200":
+          description: Quiz result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizResult"
+
+  /flashcards:
+    get:
+      operationId: listFlashcardSets
+      tags: [flashcards]
+      summary: List all flashcard sets
+      responses:
+        "200":
+          description: List of flashcard sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FlashcardSet"
+    post:
+      operationId: createFlashcardSet
+      tags: [flashcards]
+      summary: Create a flashcard set (AI-generated)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlashcardSetInput"
+      responses:
+        "201":
+          description: Created flashcard set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlashcardSet"
+
+  /flashcards/{id}:
+    get:
+      operationId: getFlashcardSet
+      tags: [flashcards]
+      summary: Get a flashcard set with cards
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Flashcard set with cards
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlashcardSet"
+        "404":
+          description: Not found
+
+  /flashcards/{id}/cards/{cardId}/status:
+    patch:
+      operationId: updateFlashcardStatus
+      tags: [flashcards]
+      summary: Mark a flashcard as learned or bookmarked
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: cardId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlashcardStatusUpdate"
+      responses:
+        "200":
+          description: Updated flashcard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Flashcard"
+
+  /progress:
+    get:
+      operationId: getProgress
+      tags: [progress]
+      summary: Get user learning progress
+      responses:
+        "200":
+          description: Progress data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgressData"
+
+  /progress/log:
+    post:
+      operationId: logStudySession
+      tags: [progress]
+      summary: Log a study session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudySessionInput"
+      responses:
+        "201":
+          description: Logged session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudySession"
+
+  /chat/conversations:
+    get:
+      operationId: listConversations
+      tags: [chat]
+      summary: List AI chat conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+    post:
+      operationId: createConversation
+      tags: [chat]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationInput"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+
+  /chat/conversations/{id}:
+    get:
+      operationId: getConversation
+      tags: [chat]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationWithMessages"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteConversation
+      tags: [chat]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /chat/conversations/{id}/messages:
+    post:
+      operationId: sendMessage
+      tags: [chat]
+      summary: Send a message and get AI response (SSE)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageInput"
+      responses:
+        "200":
+          description: SSE stream of AI response
+          content:
+            text/event-stream: {}
+
+  /notes:
+    get:
+      operationId: listNotes
+      tags: [notes]
+      summary: List study notes
+      responses:
+        "200":
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Create a note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "201":
+          description: Created note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+
+  /notes/{id}:
+    patch:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteUpdate"
+      responses:
+        "200":
+          description: Updated note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Delete a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalStudyMinutes:
+          type: integer
+        currentStreak:
+          type: integer
+        quizzesCompleted:
+          type: integer
+        flashcardsLearned:
+          type: integer
+        studyPlansActive:
+          type: integer
+        weeklyGoalMinutes:
+          type: integer
+        weeklyStudiedMinutes:
+          type: integer
+        xpPoints:
+          type: integer
+        level:
+          type: integer
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityItem"
+      required:
+        - totalStudyMinutes
+        - currentStreak
+        - quizzesCompleted
+        - flashcardsLearned
+        - studyPlansActive
+        - weeklyGoalMinutes
+        - weeklyStudiedMinutes
+        - xpPoints
+        - level
+        - recentActivity
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, type, description, createdAt]
+
+    StudyPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+        subject:
+          type: string
+        goal:
+          type: string
+        targetExam:
+          type: ["string", "null"]
+        hoursPerDay:
+          type: number
+        deadline:
+          type: ["string", "null"]
+        skillLevel:
+          type: string
+        planContent:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, subject, goal, hoursPerDay, skillLevel, planContent, createdAt]
+
+    StudyPlanInput:
+      type: object
+      properties:
+        subject:
+          type: string
+        goal:
+          type: string
+        targetExam:
+          type: string
+        hoursPerDay:
+          type: number
+        deadline:
+          type: string
+        skillLevel:
+          type: string
+      required: [subject, goal, hoursPerDay, skillLevel]
+
+    Quiz:
+      type: object
+      properties:
+        id:
+          type: integer
+        topic:
+          type: string
+        difficulty:
+          type: string
+        questionType:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizQuestion"
+        createdAt:
+          type: string
+          format: date-time
+        lastScore:
+          type: ["number", "null"]
+      required: [id, topic, difficulty, questionType, questions, createdAt]
+
+    QuizQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        options:
+          type: ["array", "null"]
+          items:
+            type: string
+        correctAnswer:
+          type: string
+        explanation:
+          type: ["string", "null"]
+      required: [id, question, correctAnswer]
+
+    QuizInput:
+      type: object
+      properties:
+        topic:
+          type: string
+        difficulty:
+          type: string
+        questionCount:
+          type: integer
+        questionType:
+          type: string
+      required: [topic, difficulty, questionCount, questionType]
+
+    QuizResultInput:
+      type: object
+      properties:
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              questionId:
+                type: integer
+              answer:
+                type: string
+            required: [questionId, answer]
+        timeTakenSeconds:
+          type: integer
+      required: [answers]
+
+    QuizResult:
+      type: object
+      properties:
+        score:
+          type: number
+        totalQuestions:
+          type: integer
+        correctAnswers:
+          type: integer
+        timeTakenSeconds:
+          type: ["integer", "null"]
+        feedback:
+          type: string
+      required: [score, totalQuestions, correctAnswers, feedback]
+
+    FlashcardSet:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        topic:
+          type: string
+        cards:
+          type: array
+          items:
+            $ref: "#/components/schemas/Flashcard"
+        createdAt:
+          type: string
+          format: date-time
+        totalCards:
+          type: integer
+        learnedCards:
+          type: integer
+      required: [id, title, topic, cards, createdAt, totalCards, learnedCards]
+
+    Flashcard:
+      type: object
+      properties:
+        id:
+          type: integer
+        front:
+          type: string
+        back:
+          type: string
+        isLearned:
+          type: boolean
+        isBookmarked:
+          type: boolean
+      required: [id, front, back, isLearned, isBookmarked]
+
+    FlashcardSetInput:
+      type: object
+      properties:
+        title:
+          type: string
+        topic:
+          type: string
+        cardCount:
+          type: integer
+      required: [title, topic, cardCount]
+
+    FlashcardStatusUpdate:
+      type: object
+      properties:
+        isLearned:
+          type: boolean
+        isBookmarked:
+          type: boolean
+
+    ProgressData:
+      type: object
+      properties:
+        dailySessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailySession"
+        quizScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizScoreEntry"
+        topicsCompleted:
+          type: integer
+        totalMinutes:
+          type: integer
+        streak:
+          type: integer
+        achievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Achievement"
+      required: [dailySessions, quizScores, topicsCompleted, totalMinutes, streak, achievements]
+
+    DailySession:
+      type: object
+      properties:
+        date:
+          type: string
+        minutes:
+          type: integer
+      required: [date, minutes]
+
+    QuizScoreEntry:
+      type: object
+      properties:
+        date:
+          type: string
+        topic:
+          type: string
+        score:
+          type: number
+      required: [date, topic, score]
+
+    Achievement:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        unlockedAt:
+          type: ["string", "null"]
+          format: date-time
+      required: [id, title, description, icon]
+
+    StudySessionInput:
+      type: object
+      properties:
+        minutes:
+          type: integer
+        topic:
+          type: string
+      required: [minutes, topic]
+
+    StudySession:
+      type: object
+      properties:
+        id:
+          type: integer
+        minutes:
+          type: integer
+        topic:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, minutes, topic, createdAt]
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, createdAt]
+
+    ConversationInput:
+      type: object
+      properties:
+        title:
+          type: string
+      required: [title]
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, conversationId, role, content, createdAt]
+
+    MessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
+
+    ConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+      required: [id, title, createdAt, messages]
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        topic:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, title, content, createdAt, updatedAt]
+
+    NoteInput:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        topic:
+          type: string
+      required: [title, content]
+
+    NoteUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        topic:
+          type: string
